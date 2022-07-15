@@ -31,7 +31,7 @@ class AuthController extends BaseController
             'password' => 'string',
         ]);
 
-        if (! $token = auth()->setTTL(60)->attempt($credentials)) {
+        if (! $token = auth()->setTTL(1440)->attempt($credentials)) {
             return response()->json([
                 'error' => 'Email ou senha inválidos.',
                 'success' => false
@@ -98,7 +98,7 @@ class AuthController extends BaseController
             'access_token' => $token,
             'token_type' => 'bearer',
             'success' => true,
-            'expires_in' => auth()->factory()->getTTL() * 60 * 24,
+            'expires_in' => auth()->factory()->getTTL(),
             'userInfo' => auth()->user(),
         ]);
     }    

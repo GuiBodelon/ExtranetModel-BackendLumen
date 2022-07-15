@@ -13,9 +13,14 @@ use Illuminate\Http\Request;
 use Laravel\Lumen\Routing\Controller as BaseController;
 use DB;
 
+
+$taxa = 2;
+
+
 class EventosConhecidosController extends BaseController
 {
 
+	
     /*  Funcoes  */   
     public function index(Request $request){
 
@@ -26,6 +31,11 @@ class EventosConhecidosController extends BaseController
 	public function totalizadorEventosConhecidos(Request $request){
 
 				$lote_fk = $request->FK_REGISTROS_AUX_LOTE;
+
+				//echo($taxa);
+
+				//exit;
+
 				
 				// Totalizadores Internações			
 				$selectEventosConhecidos = DB::connection('oracle_spasaude')

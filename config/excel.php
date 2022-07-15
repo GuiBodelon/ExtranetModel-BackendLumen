@@ -60,7 +60,7 @@ return [
         |
         */
         'properties'             => [
-            'creator'        => '',
+            'creator'        => 'Guilherme Bodelon',
             'lastModifiedBy' => '',
             'title'          => '',
             'description'    => '',
@@ -68,7 +68,7 @@ return [
             'keywords'       => '',
             'category'       => '',
             'manager'        => '',
-            'company'        => '',
+            'company'        => 'S.P.A. Saúde',
         ],
     ],
 

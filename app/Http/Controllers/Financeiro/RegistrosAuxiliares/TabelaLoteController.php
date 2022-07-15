@@ -13,10 +13,8 @@ class TabelaLoteController extends BaseController
         $tipoOperacao = $request->tipoOperacao;
         $mesref = $request->mesref;
 
-        if($tipoOperacao == 'C'){
-            $consulta = 'WHERE B.ID IN (1, 2, 3, 4, 5, 6)';
-        }else if($tipoOperacao == 'O'){
-            $consulta = 'WHERE B.ID IN (10, 20, 30, 40, 50, 60)';
+        if($tipoOperacao == 'A'){
+            $consulta = "WHERE MES_REF = '$mesref'"; 
         }else{
             $consulta = "WHERE B.ID = '$tipoOperacao' AND MES_REF = '$mesref'";
         }

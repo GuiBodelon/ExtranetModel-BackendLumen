@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Financeiro\RegistrosAuxiliares;
+namespace App\Models;
 
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
@@ -11,7 +11,7 @@ use Laravel\Lumen\Auth\Authorizable;
 use Illuminate\Http\Request;
 use DB;
 
-class EventosPagos extends Model implements AuthenticatableContract, AuthorizableContract
+class ReferenciasCorporativa extends Model implements AuthenticatableContract, AuthorizableContract
 {
     use Authenticatable, Authorizable, HasFactory;
   
@@ -19,6 +19,6 @@ class EventosPagos extends Model implements AuthenticatableContract, Authorizabl
     protected $connection='oracle_esaude_homolog';
     
  
-    protected $table='API_REG_AUX_EVENTOS_PAGOS';
+    protected $table='API_REFERENCIAS_CORPORATIVA';
     
 }

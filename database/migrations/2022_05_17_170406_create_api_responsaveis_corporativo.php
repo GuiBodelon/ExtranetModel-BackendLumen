@@ -18,7 +18,7 @@ class CreateApiResponsaveisCorporativo extends Migration
             $table->string('nome');
             $table->string('cpf');
             $table->string('cargo');
-            $table->string('numero_cargo');
+            $table->string('numero');
             $table->string('tipo_documento');
             $table->string('numero_documento');
             $table->string('telefone');

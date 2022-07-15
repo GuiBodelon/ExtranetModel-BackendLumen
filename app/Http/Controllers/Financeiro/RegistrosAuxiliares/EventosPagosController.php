@@ -13,20 +13,27 @@ use Illuminate\Http\Request;
 use Laravel\Lumen\Routing\Controller as BaseController;
 use DB;
 
+
+
+
 class EventosPagosController extends BaseController
 {
 
     /*  Funcoes  */   
-    public function index(Request $request){
 
-           
+
+
+    public function index() {
+	
+
     }
 
 
 	public function totalizadorEventosPagos(Request $request){
 
-				$lote_fk = $request->FK_REGISTROS_AUX_LOTE;
-				
+
+				$lote_fk = $request->lote_fk;
+	
 				// Totalizadores Internações			
 				$selectEventosPagos = DB::connection('oracle_spasaude')
 				->select("SELECT TIPO_EVENTO_ANS, VALOR_PAGAMENTO, VALOR_EVENTO, VALOR_RECUPERACAO, VLR_GLOSA FROM API_REG_AUX_EVENTOS_PAGOS  WHERE TIPO_EVENTO_ANS = 'Internações' AND FK_REGISTROS_AUX_LOTE = $lote_fk");
@@ -69,11 +76,10 @@ class EventosPagosController extends BaseController
 				$terapias = array(
 					'tipo_evento'=>$tipoEvento,
 					'total_evento'=>number_format($eventoTerapias, 2, ',', '.'),
-					'total_recuperado'=>number_format($recuperadoTerapias, 2, ',', '.'),
+					'total_recuperado'=>number_format($recuperadoTerapias, 2, ',', '.'),	
 					'total_pagamento'=>number_format($totalPagoTerapias, 2, ',', '.'),
 					'total_glosas'=>number_format($glosaTerapias, 2, ',', '.')
-				);				
-
+				);
 
 				// Totalizadores Pacotes
 				$selectEventosPagos = DB::connection('oracle_spasaude')
@@ -195,74 +201,89 @@ class EventosPagosController extends BaseController
 					'total_recuperado'=>number_format($recuperadoDemaisdespesas, 2, ',', '.'),
 					'total_pagamento'=>number_format($totalPagoDemaisdespesas, 2, ',', '.'),
 					'total_glosas'=>number_format($glosaDemaisdespesas, 2, ',', '.')
-				);					
+				);			
+				
+		
+					// Monta Array com todos o Eventos
+					$todosEventos = array(
+						$internacoes,
+						$terapias,
+						$pacotes,
+						$consultasMedicas,
+						$examesComplementares,
+						$atendimentosAmbulatoriais,
+						$demaisDespesas
+					);
 
 
-				// Monta Array com todos o Eventos
-				$todosEventos = array(
-					$internacoes,
-					$terapias,
-					$pacotes,
-					$consultasMedicas,
-					$examesComplementares,
-					$atendimentosAmbulatoriais,
-					$demaisDespesas
-				);
+					return $todosEventos;			
 
-				return response()->json($todosEventos);
 	}
 
 
-	//public function gerarExcelEventosPagosFilename(Request $request){		
-	//	$filename = DB::connection('oracle_spasaude')
-	//	->select("SELECT A.ID LOTE, B.DESCRICAO DESCRICAO, MES_REF MESREF 
-	//	FROM REGISTROS_AUX_LOTE A
-	//	INNER JOIN REGISTROS_AUX_OPERACOES B ON (A.FK_OPERACAO_REG_AUX = B.ID)
-	//	INNER JOIN REGISTROS_AUX_LOTE_STATUS C ON(C.ID = A.FK_STATUS)
-	//	WHERE A.ID = $request->lote_fk");
 
-	//	return response()->json($filename);
-	//}
+	public function gerarExcelEventosPagosFilename(Request $request){		
+		$filename = DB::connection('oracle_spasaude')
+		->select("SELECT A.ID LOTE, B.DESCRICAO DESCRICAO, MES_REF MESREF 
+		FROM REGISTROS_AUX_LOTE A
+		INNER JOIN REGISTROS_AUX_OPERACOES B ON (A.FK_OPERACAO_REG_AUX = B.ID)
+		INNER JOIN REGISTROS_AUX_LOTE_STATUS C ON(C.ID = A.FK_STATUS)
+		WHERE A.ID = $request->lote_fk");
+
+		return response()->json($filename);
+	}
 
 
 	public function gerarExcelEventosPagos(Request $request){
 
-		    $mesAno = '03-2022';
-			$lote_fk = $request->FK_REGISTROS_AUX_LOTE;
+			$lote_fk = $request->lote_fk;
+
+			$selectEventosPagos = DB::connection('oracle_spasaude')
+            ->select("SELECT * FROM API_REG_AUX_EVENTOS_PAGOS WHERE FK_REGISTROS_AUX_LOTE = $lote_fk");
+			
+			foreach ($selectEventosPagos as $evento):
+
+				$mesano = $evento->mesano;
+
+			endforeach;
+
 			$logoSpa = 'S.P.A. SAUDE - SISTEMA DE PROMOCAO ASSISTENCIAL';
 			$logoSpaEndereco = 'Rua Maestro Cardim, 1.191 - 8o andar - Paraiso - Sao Paulo/SP - CEP 01323-001';
 			$LogoSpaTexto1 = 'REGISTRO AUXILIAR DE EVENTOS PAGOS DE ASSISTENCIA A SAUDE';
 			$LogoSpaTexto2 = 'Planos Coletivos por Adesao e Empresarial';
 			$LogoSpaTexto3 = 'Cobertura Assistencial Medico Hospitalar Pre-estabelecido: Ambulatorial + Hospitalar com Obstetricia';
-			$LogoSpaTexto4 = 'Mes Referencia:';
+			$LogoSpaTexto4 = "Mês Referencia: $mesano";
 
 			$fileName = $lote_fk;
 
 			$valorInternacoes = 0;
 
-			$selectEventosPagos = DB::connection('oracle_spasaude')
-            ->select("SELECT * FROM API_REG_AUX_EVENTOS_PAGOS WHERE FK_REGISTROS_AUX_LOTE = $lote_fk");
-
 			$countArray = count($selectEventosPagos)+9;
 
 			$spreadsheet = new Spreadsheet(); 
 
-			$spreadsheet->getActiveSheet()->getDefaultColumnDimension()->setWidth(120, 'pt');
-
     		$sheet = $spreadsheet->getActiveSheet(); 
 
-			$sheet->getStyle("E".($countArray+3))->getFont()->setBold(true);
+			// FORMATAÇÃO ESTILO EXCEL
+				$spreadsheet->getActiveSheet()->getDefaultColumnDimension()->setWidth(120, 'pt');
+				$sheet->getStyle("E".($countArray+3))->getFont()->setBold(true);
+				$sheet->getStyle("A1")->getFont()->setBold(true);
+				$sheet->getStyle("A2")->getFont()->setBold(true);
+				$sheet->getStyle("A3")->getFont()->setBold(true);
+				$sheet->getStyle("A4")->getFont()->setBold(true);
+			// FIM FORMATAÇÃO ESTILO EXCEL
 
 
 			//CABECALHO PLANILHA DADOS CORPORATIVOS 
-			$sheet->setCellValue('A1', $logoSpa);
-			$sheet->setCellValue('A2', $logoSpaEndereco);
-			$sheet->setCellValue('A3', $LogoSpaTexto1);
-			$sheet->setCellValue('A4', $LogoSpaTexto2);
-			$sheet->setCellValue('A4', $LogoSpaTexto3);
-			$sheet->setCellValue('A4', $LogoSpaTexto4);
+				$sheet->setCellValue('A1', $logoSpa);
+				$sheet->setCellValue('A2', $logoSpaEndereco);
+				$sheet->setCellValue('A3', $LogoSpaTexto1);
+				$sheet->setCellValue('A4', $LogoSpaTexto2);
+				$sheet->setCellValue('A4', $LogoSpaTexto3);
+				$sheet->setCellValue('A4', $LogoSpaTexto4);
 			//FIM CABELHO PLANILHA DADOS CORPORATIVOS
 
+			
 			/*
 				TOTALIZADOR EVENTOS PAGOS / GLOSAS
 				A SOMA DE 9 AO COUNT DO ARRAY SE FAZ, POIS O CABECALHO TEM 9 LINHAS 
@@ -282,9 +303,9 @@ class EventosPagosController extends BaseController
 
 				$sheet->setCellValue("F".($countArray+5), 'VALOR EVENTO');
 				$sheet->setCellValue("F".($countArray+6), '');
-				$sheet->setCellValue("F".($countArray+7), "$valorInternacoes");
-				$sheet->setCellValue("F".($countArray+8), "$valorInternacoes");
-				$sheet->setCellValue("F".($countArray+9), "$valorInternacoes");
+				$sheet->setCellValue("F".($countArray+7),  "$valorInternacoes");
+				$sheet->setCellValue("F".($countArray+8),  "$valorInternacoes");
+				$sheet->setCellValue("F".($countArray+9),  "$valorInternacoes");
 				$sheet->setCellValue("F".($countArray+10), "$valorInternacoes");
 				$sheet->setCellValue("F".($countArray+11), "$valorInternacoes");
 				$sheet->setCellValue("F".($countArray+12), "$valorInternacoes");
@@ -292,9 +313,9 @@ class EventosPagosController extends BaseController
 
 				$sheet->setCellValue("G".($countArray+5), 'VALOR RECUPERADO');
 				$sheet->setCellValue("G".($countArray+6), '');
-				$sheet->setCellValue("G".($countArray+7), "$valorInternacoes");
-				$sheet->setCellValue("G".($countArray+8), "$valorInternacoes");
-				$sheet->setCellValue("G".($countArray+9), "$valorInternacoes");
+				$sheet->setCellValue("G".($countArray+7),  "$valorInternacoes");
+				$sheet->setCellValue("G".($countArray+8),  "$valorInternacoes");
+				$sheet->setCellValue("G".($countArray+9),  "$valorInternacoes");
 				$sheet->setCellValue("G".($countArray+10), "$valorInternacoes");
 				$sheet->setCellValue("G".($countArray+11), "$valorInternacoes");
 				$sheet->setCellValue("G".($countArray+12), "$valorInternacoes");
@@ -302,9 +323,9 @@ class EventosPagosController extends BaseController
 
 				$sheet->setCellValue("H".($countArray+5), 'VALOR PAGAMENTO');
 				$sheet->setCellValue("H".($countArray+6), '');
-				$sheet->setCellValue("H".($countArray+7), "$valorInternacoes");
-				$sheet->setCellValue("H".($countArray+8), "$valorInternacoes");
-				$sheet->setCellValue("H".($countArray+9), "$valorInternacoes");
+				$sheet->setCellValue("H".($countArray+7),  "$valorInternacoes");
+				$sheet->setCellValue("H".($countArray+8),  "$valorInternacoes");
+				$sheet->setCellValue("H".($countArray+9),  "$valorInternacoes");
 				$sheet->setCellValue("H".($countArray+10), "$valorInternacoes");
 				$sheet->setCellValue("H".($countArray+11), "$valorInternacoes");
 				$sheet->setCellValue("H".($countArray+12), "$valorInternacoes");
@@ -313,9 +334,9 @@ class EventosPagosController extends BaseController
 
 				$sheet->setCellValue("I".($countArray+5), 'VALOR GLOSA');
 				$sheet->setCellValue("I".($countArray+6), '');
-				$sheet->setCellValue("I".($countArray+7), "$valorInternacoes");
-				$sheet->setCellValue("I".($countArray+8), "$valorInternacoes");
-				$sheet->setCellValue("I".($countArray+9), "$valorInternacoes");
+				$sheet->setCellValue("I".($countArray+7),  "$valorInternacoes");
+				$sheet->setCellValue("I".($countArray+8),  "$valorInternacoes");
+				$sheet->setCellValue("I".($countArray+9),  "$valorInternacoes");
 				$sheet->setCellValue("I".($countArray+10), "$valorInternacoes");
 				$sheet->setCellValue("I".($countArray+11), "$valorInternacoes");
 				$sheet->setCellValue("I".($countArray+12), "$valorInternacoes");
@@ -361,26 +382,28 @@ class EventosPagosController extends BaseController
 				$sheet->setCellValue('D'.$i, number_format($evento->valor_pagamento, 2, ',', '.')); 
 				$sheet->setCellValue('E'.$i, number_format($evento->valor_recuperacao, 2, ',', '.')); 
 				$sheet->setCellValue('F'.$i, number_format($evento->vlr_glosa, 2, ',', '.')); 
-				$sheet->setCellValue('G'.$i, $evento->dt_conhecimento); 
-				$sheet->setCellValue('H'.$i, $evento->dt_ocorrencia_evento); 
-				$sheet->setCellValue('I'.$i, $evento->data_pagamento); 
+				$sheet->setCellValue('G'.$i, date('d/m/Y',strtotime($evento->dt_conhecimento)));
+				$sheet->setCellValue('H'.$i, date('d/m/Y',strtotime($evento->dt_ocorrencia_evento)));  
+				$sheet->setCellValue('I'.$i, date('d/m/Y',strtotime($evento->data_pagamento))); 
 				$sheet->setCellValue('J'.$i, $evento->nome_usuario_principal); 
 				$sheet->setCellValue('K'.$i, $evento->cpf_cnpj_usuario_principal); 
 				$sheet->setCellValue('L'.$i, $evento->nome_usuario_evento); 
 				$sheet->setCellValue('M'.$i, $evento->cpf_benef_evento); 
 				$sheet->setCellValue('N'.$i, $evento->contrato_benef); 
 				$sheet->setCellValue('O'.$i, $evento->numero_registro_produto);
-				$sheet->setCellValue('P'.$i, $evento->numero_registro_produto);
+				$sheet->setCellValue('P'.$i, $evento->natureza);
 				$sheet->setCellValue('Q'.$i, $evento->cnpj_cpf_prestador);
 				$sheet->setCellValue('R'.$i, $evento->nome_prestador);
 				$sheet->setCellValue('S'.$i, $evento->tipo_documento);
 				$sheet->setCellValue('T'.$i, $evento->documento);
 				$sheet->setCellValue('U'.$i, $evento->tipo_evento_ans);
-				$sheet->setCellValue('V'.$i, $evento->dt_conhecimento);
+				$sheet->setCellValue('V'.$i, date('d/m/Y',strtotime($evento->dt_conhecimento)));
 
 				$i++;
 
 			endforeach;
+
+
 			//FIM INSERT DADOS BD NO CORPO DA PLANILHA 
 
 					$writer = new Xlsx($spreadsheet);
@@ -399,6 +422,5 @@ class EventosPagosController extends BaseController
 		}
 
 		
-				
 
 }

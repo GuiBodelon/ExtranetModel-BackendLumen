@@ -34,12 +34,20 @@ Route::group(['prefix' => 'api'], function ($router){
 
         //ROTAS /TI -> api/ti
         $router->group(['prefix' => 'ti'], function ($router){
-            $router->get('menus', 'TI\MenusController@getMenus');
-            $router->post('create-menu', 'TI\MenusController@criarMenu');
-            $router->put('update-menu', 'TI\MenusController@atualizarMenu');
-            $router->put('change-menu-status', 'TI\MenusController@mudarStatusMenu');
-            $router->get('get-parent-menus', 'TI\MenusController@getParentMenus');
-            $router->post('create-child-menu', 'TI\MenusController@criarMenuChild');
+            $router->group(['prefix' => 'menus'], function ($router){
+                $router->get('menus', 'TI\MenusController@getMenus');
+                $router->post('create-menu', 'TI\MenusController@criarMenu');
+                $router->put('update-menu', 'TI\MenusController@atualizarMenu');
+                $router->put('change-menu-status', 'TI\MenusController@mudarStatusMenu');
+                $router->get('get-parent-menus', 'TI\MenusController@getParentMenus');
+                $router->post('create-child-menu', 'TI\MenusController@criarMenuChild');
+            });
+            $router->group(['prefix' => 'usuarios-sig'], function ($router){
+                $router->get('usuarios', 'TI\UsuariosSigController@getUsuarios');
+                $router->get('usuario', 'TI\UsuariosSigController@getUsuario');
+                $router->post('create-usuario', 'TI\UsuariosSigController@criarUsuario');
+                $router->put('update-usuario', 'TI\UsuariosSigController@atualizarUsuario');
+            });
         });
 
         //ROTAS /CREDENCIAMENTO -> api/credenciamento
@@ -70,9 +78,14 @@ Route::group(['prefix' => 'api'], function ($router){
             $router->group(['prefix' => 'registros-auxiliares'], function ($router){
                 //Alimentar Inputs da tela
                 $router->get('inputs', 'Financeiro\RegistrosAuxiliares\InputsController@index');
+
+                //Alimentar Tabela
                 $router->get('tabela-lote', 'Financeiro\RegistrosAuxiliares\TabelaLoteController@index');
 
+                //Gerar Novo Registro
                 $router->post('gerar-registro', 'Financeiro\RegistrosAuxiliares\NovoRegistroController@gerarNovoRegistroConferencia');
+
+                //Aprovar Registro como Oficial
                 $router->post('gerar-registro-oficial', 'Financeiro\RegistrosAuxiliares\NovoRegistroController@gerarRegistroOficial');
 
                 // Eventos Pagos
@@ -84,6 +97,42 @@ Route::group(['prefix' => 'api'], function ($router){
                  $router->get('eventos-conhecidos/totalizador', 'Financeiro\RegistrosAuxiliares\EventosConhecidosController@totalizadorEventosConhecidos');
                  $router->get('eventos-conhecidos/gerar-excel', 'Financeiro\RegistrosAuxiliares\EventosConhecidosController@gerarExcelEventosConhecidos');
                  $router->get('eventos-conhecidos/gerar-excel/filename', 'Financeiro\RegistrosAuxiliares\EventosConhecidosController@gerarExcelEventosConhecidosFilename');
+
+
+                 // Eventos Conhecidos
+                 $router->get('eventos-conhecidos/totalizador', 'Financeiro\RegistrosAuxiliares\EventosConhecidosController@totalizadorEventosConhecidos');
+                 $router->get('eventos-conhecidos/gerar-excel', 'Financeiro\RegistrosAuxiliares\EventosConhecidosController@gerarExcelEventosConhecidos');
+                 $router->get('eventos-conhecidos/gerar-excel/filename', 'Financeiro\RegistrosAuxiliares\EventosConhecidosController@gerarExcelEventosConhecidosFilename');
+
+
+                  // Eventos Glosas
+                  $router->get('eventos-glosa/totalizador', 'Financeiro\RegistrosAuxiliares\EventosGlosaController@totalizadorEventosGlosa');
+                  $router->get('eventos-glosa/gerar-excel', 'Financeiro\RegistrosAuxiliares\EventosGlosaController@gerarExcelEventosGlosa');
+                  $router->get('eventos-glosa/gerar-excel/filename', 'Financeiro\RegistrosAuxiliares\EventosGlosaController@gerarExcelEventosGlosaFilename');
+
+
+                 // Eventos CoParticipacao
+                 $router->get('eventos-coparticipacao/totalizador', 'Financeiro\RegistrosAuxiliares\EventosCoParticipacaoController@totalizadorCoParticipacao');
+                 $router->get('eventos-coparticipacao/gerar-excel', 'Financeiro\RegistrosAuxiliares\EventosCoParticipacaoController@gerarExcelCoParticipacao');
+                 $router->get('eventos-coparticipacao/gerar-excel/filename', 'Financeiro\RegistrosAuxiliares\EventosCoParticipacaoController@gerarExcelCoParticipacaoFilename');
+
+
+                  // Eventos ContraPrestacaoEmitida
+                  $router->get('eventos-contra-prestacao-emitida/totalizador', 'Financeiro\RegistrosAuxiliares\EventosContraPrestacaoEmitidaController@totalizadorContraPrestacaoEmitida');
+                  $router->get('eventos-contra-prestacao-emitida/gerar-excel', 'Financeiro\RegistrosAuxiliares\EventosContraPrestacaoEmitidaController@gerarExcelContraPrestacaoEmitida');
+                  $router->get('eventos-contra-prestacao-emitida/gerar-excel/filename', 'Financeiro\RegistrosAuxiliares\EventosContraPrestacaoEmitidaController@gerarExcelContraPrestacaoEmitidaFilename');
+
+
+                 // Eventos ContraPrestacaoRecebida
+                $router->get('eventos-contra-prestacao-recebida/totalizador', 'Financeiro\RegistrosAuxiliares\EventosContraPrestacaoRecebidaController@totalizadorContraPrestacaoRecebida');
+                $router->get('eventos-contra-prestacao-recebida/gerar-excel', 'Financeiro\RegistrosAuxiliares\EventosContraPrestacaoRecebidaController@gerarExcelContraPrestacaoRecebida');
+                $router->get('eventos-contra-prestacao-recebida/gerar-excel/filename', 'Financeiro\RegistrosAuxiliares\EventosContraPrestacaoRecebidaController@gerarExcelContraPrestacaoRecebidaFilename');
+
+
+                // Eventos CorrecaoCoParticipacao
+                $router->get('eventos-correcao-coparticipacao/totalizador', 'Financeiro\RegistrosAuxiliares\EventosCorrecaoCoParticipacaoController@totalizadorCorrecaoCoParticipacao');
+                $router->get('eventos-correcao-coparticipacao/gerar-excel', 'Financeiro\RegistrosAuxiliares\EventosCorrecaoCoParticipacaoController@gerarExcelCorrecaoCoParticipacao');
+                $router->get('eventos-correcao-coparticipacao/gerar-excel/filename', 'Financeiro\RegistrosAuxiliares\EventosCorrecaoCoParticipacaoController@gerarExcelCorrecaoCoParticipacaoFilename');
 
 
             });
